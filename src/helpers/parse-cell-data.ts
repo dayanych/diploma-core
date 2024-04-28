@@ -1,6 +1,6 @@
 export const parseCellData = (cellData: string) => {
   if (cellData === 'null') {
-    return 0;
+    return '0.00%';
   }
 
   const parsedCellArray = cellData.split(';');

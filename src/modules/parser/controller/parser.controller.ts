@@ -4,6 +4,8 @@ import * as path from 'path';
 import {
   Body,
   Controller,
+  Header,
+  Options,
   Post,
   Res,
   StreamableFile,
@@ -24,6 +26,18 @@ import { ServiceAvailabilityDownloadBody } from './bodies/service-availability-d
 export class ParserController {
   constructor(private readonly parserService: ParserService) {}
 
+  @Options('document/download')
+  handleDownloadOptionsRequest(@Res() res: Response) {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept',
+    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.sendStatus(200);
+  }
+  @Header('Access-Control-Allow-Origin', 'http://localhost:5173')
   @Post('document/download')
   async getStaticFile(
     @Res({ passthrough: true }) res: Response,
@@ -39,17 +53,28 @@ export class ParserController {
     return new StreamableFile(file);
   }
 
+  @Options('service-availability/upload')
+  handleOptionsRequest(@Res() res: Response) {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept',
+    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.sendStatus(200);
+  }
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'User profile photo',
     type: FileUploadBody,
   })
+  @Header('Access-Control-Allow-Origin', 'http://localhost:5173')
   @Post('service-availability/upload')
   @UseInterceptors(FileInterceptor('file', facilityDocumentConfig))
   async uploadServiceAvailability(
     @UploadedFile() file: Express.Multer.File,
     @MulterValidationError() multerValidationError: string,
-  ): Promise<string> {
+  ): Promise<{ path: string }> {
     if (multerValidationError) {
       throw new UnsupportedMediaTypeException(multerValidationError);
     }
@@ -57,12 +82,13 @@ export class ParserController {
     const outputPath =
       this.parserService.parseServiceAvailabilityToRemunerationNotice(file);
 
-    return outputPath;
+    return {
+      path: outputPath,
+    };
   }
 
   // @ApiConsumes('multipart/form-data')
   // @ApiBody({
-  //   description: 'User profile photo',
   //   type: FileUploadBody,
   // })
   // @Post('xlsx/upload')
