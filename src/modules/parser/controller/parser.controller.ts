@@ -53,8 +53,10 @@ export class ParserController {
     return new StreamableFile(file);
   }
 
-  @Options('service-availability/upload')
-  handleOptionsRequest(@Res() res: Response) {
+  @Options('service-availability/remuneration-notice')
+  handleOptionsRequestServiceAvailabilityToRemunerationNotice(
+    @Res() res: Response,
+  ) {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
     res.setHeader('Access-Control-Allow-Methods', 'POST');
     res.setHeader(
@@ -69,9 +71,9 @@ export class ParserController {
     type: FileUploadBody,
   })
   @Header('Access-Control-Allow-Origin', 'http://localhost:5173')
-  @Post('service-availability/upload')
+  @Post('service-availability/remuneration-notice')
   @UseInterceptors(FileInterceptor('file', facilityDocumentConfig))
-  async uploadServiceAvailability(
+  async parseServiceAvailabilityToRemunerationNotice(
     @UploadedFile() file: Express.Multer.File,
     @MulterValidationError() multerValidationError: string,
   ): Promise<{ path: string }> {
@@ -81,6 +83,40 @@ export class ParserController {
 
     const outputPath =
       this.parserService.parseServiceAvailabilityToRemunerationNotice(file);
+
+    return {
+      path: outputPath,
+    };
+  }
+
+  @Options('service-availability/commissions')
+  handleOptionsRequestServiceAvailabilityToCommissions(@Res() res: Response) {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept',
+    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.sendStatus(200);
+  }
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    type: FileUploadBody,
+  })
+  @Header('Access-Control-Allow-Origin', 'http://localhost:5173')
+  @Post('service-availability/commissions')
+  @UseInterceptors(FileInterceptor('file', facilityDocumentConfig))
+  async parseServiceAvailabilityToCommissions(
+    @UploadedFile() file: Express.Multer.File,
+    @MulterValidationError() multerValidationError: string,
+  ): Promise<{ path: string }> {
+    if (multerValidationError) {
+      throw new UnsupportedMediaTypeException(multerValidationError);
+    }
+
+    const outputPath =
+      this.parserService.parseServiceAvailabilityToCommissions(file);
 
     return {
       path: outputPath,
